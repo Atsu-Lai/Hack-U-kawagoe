@@ -31,13 +31,13 @@ app.get('/', (req,res) => {
 app.get('/home', (req,res) => {
   //login status
   var data ={
-      status: true,
+      status: false,
   }
-  if (req.session.login == null) {
-    //login
-    status: false;
-    console.log('test');
-  }
+  // if (req.session.login == null) {
+  //   //login
+  //   status: false;
+  //   console.log('test');
+  // }
     res.render('home.ejs', data);
 });
 
