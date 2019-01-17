@@ -30,13 +30,15 @@ app.get('/', (req,res) => {
 
 app.get('/home', (req,res) => {
   //login status
-  var status;
+  var data ={
+      status: true,
+  }
   if (req.session.login == null) {
     //login
-    status = false;
+    status: false;
     console.log('test');
   }
-    res.render('home.ejs', status);
+    res.render('home.ejs', data);
 });
 
 app.get('/chat', (req,res) => {
