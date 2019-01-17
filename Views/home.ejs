@@ -22,10 +22,9 @@
     <div id="main">
       <h1>これはトップページや</h1>
       <!-- ログインしていなかったら -->
-      <input type="button" name="login_button" value="ログイン" onClick="location.href='login.ejs'" style="font-size: 100px;">
+      <a href="/login"><input type="button" name="login_button" value="ログイン" style="font-size: 100px;"></a>
     </div>
-    <div id="nav">
-    </div>
+    <%- include('nav') %>
   </div>
 </body>
 </html>

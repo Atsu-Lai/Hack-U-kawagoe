@@ -2,14 +2,7 @@
 <html>
 <head>
   <title>ホーム</title>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script>
-    $(function(){
-      $("#nav").load("/Views/nav.ejs");
-      //他にHTMLにincludeするやつでいいのがあったらそっち使いたい
-      //headerもテンプレートにしたかったけど一行だからなぁ。。となっている
-    })
-  </script>
+
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="style.css">
@@ -20,12 +13,16 @@
       <h1>電車でGO！（仮）</h1>
     </div>
     <div id="main">
+      <% if (status == false) { %>
+        <h1>ログインしてください</h1>
+        <a href="/login"><input type="button" name="login_button" value="ログイン" style="font-size: 100px;"></a>
+      <% } else { %>
+        <h1>ログイン済み</h1>
       <h1>これはトップページや</h1>
       <!-- ログインしていなかったら -->
-      <input type="button" name="login_button" value="ログイン" onClick="location.href='login.ejs'" style="font-size: 100px;">
+      <% } %>
     </div>
-    <div id="nav">
-    </div>
+    <%- include('nav') %>
   </div>
 </body>
 </html>
