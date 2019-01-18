@@ -18,7 +18,7 @@ var mysql_setting = {
     database: 'train-db',
 } */
 const knex = require('knex')({
-    dialect: 'postgres',
+    dialect: 'postgresql',
     //dialect: 'mysql',
     connection: {
         host    : 'ec2-54-235-68-3.compute-1.amazonaws.com',
@@ -105,7 +105,7 @@ io.on('connection',(socket) => {
                     console.log(mdl[i].attributes.sid);
                     io.to(mdl[i].attributes.sid).emit('userlist2',{val:list})
                 }
-                
+
             }
         })
 
