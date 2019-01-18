@@ -4,6 +4,11 @@
     
     
     <title><%= title %></title>
+    <style type="text/css">
+        th,td{
+            border-style:solid;
+        }
+    </style>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -27,19 +32,43 @@
         
         socketio.on('userlist', (data) => {
             var val = data.val;
+            userlist = [];
+            
             for(var i in val){
-                userlist.push({
-                    id:val[i].socketid,
-                    name:val[i].name,
-                    ido:val[i].ido,
-                    keido:val[i].keido,
-                    time:val[i].time,
-                });
+                if(data.id != val[i].sid){
+                    userlist.push({
+                        id:val[i].sid,
+                        name:val[i].name,
+                        ido:val[i].ido,
+                        keido:val[i].keido,
+                        time:val[i].time,
+                    });
+                }
+                
             }
+            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>time</th></tr>";
+            for(var i in userlist){
+                table += "<tr><td>" + userlist[i].id +"</td>" +
+                            "<td>" + userlist[i].name +"</td>" +
+                            "<td>" + userlist[i].ido +"</td>" +
+                            "<td>" + userlist[i].keido +"</td>" +
+                            "<td>" + userlist[i].time +"</td></tr>";
+            }
+            $('table').html(table);
         });
 
         socketio.on('userlist2', (data) => {
-            userlist.push(data);
+            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>time</th></tr>";
+            userlist.push(data.val);
+            for(var i in userlist){
+                table += "<tr><td>" + userlist[i].id +"</td>" +
+                            "<td>" + userlist[i].name +"</td>" +
+                            "<td>" + userlist[i].ido +"</td>" +
+                            "<td>" + userlist[i].keido +"</td>" +
+                            "<td>" + userlist[i].time +"</td></tr>";
+                
+            }
+            $('table').html(table);
             console.log(userlist);
         })
         
@@ -72,5 +101,8 @@
     <input type="text" id="text" value="aaa"><br>
     <button id="test">send</button>
     <button onclick="test()">ぼたん</button>
+    <table id="userlist">
+        <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>time</th></tr>
+    </table>
 </body>
 </html>

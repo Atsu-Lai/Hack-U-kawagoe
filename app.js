@@ -10,13 +10,28 @@ const session_opt = {
   saveUninitialized: false,
   cookie: { maxAge: 60 * 60 * 1000 }
 };
-const mysql = require('mysql');
+/*const mysql = require('mysql');
 var mysql_setting = {
     host    : 'localhost',
     user    : 'root',
     password: '',
     database: 'train-db',
-}
+} */
+const knex = require('knex')({
+    dialect: 'postgres',
+    //dialect: 'mysql',
+    connection: {
+        host    : 'ec2-54-235-68-3.compute-1.amazonaws.com',
+        user    : 'fzzukpvuevabig',
+        password: '1bc548633cfa7b8808185d26e2e25c6b834c4859c24a91a161ff31a69d8dfba9',
+        database: 'dfp3aai94600tp',
+        charset : 'utf8'
+    }
+});
+const Bookshelf = require('bookshelf')(knex);
+const FL = Bookshelf.Model.extend({
+    tableName: 'location'
+});
 app.use(session(session_opt));
 app.use(express.static('public'));
 
@@ -67,29 +82,33 @@ io.on('connection',(socket) => {
         var timemax = data.timemax;
         var timemin = data.timemin;
 
-        var data = {'name':data.name, 'ido':data.ido, 'keido':data.keido, 'time':data.time, 'socketid':socket.id};
-        var connection = mysql.createConnection(mysql_setting);
-        connection.connect();
-        connection.query('insert into first_location3 set ?', data,(error, results,fields) => {
+        var data = {name:data.name, ido:data.ido, keido:data.keido, time:data.time, sid:socket.id};
+        new FL(data).save().then((model) => {
 
         });
 
-        connection.query('SELECT * from first_location3 where ido<=? and ido>=? and keido<=? and keido>=? and time<=? and time>=?',
-        [idomax,idomin,keidomax,keidomin,timemax,timemin],(error, results,fields) => {
-            io.to(socket.id).emit('userlist',{val:results})
+        new FL().where('ido','<=',idomax).where('ido','>=',idomin)
+        .where('keido','<=',keidomax).where('keido','>=',keidomin)
+        .where('time','<=',timemax).where('time','>=',timemin).fetchAll().then((model) =>{
+            const mdl = model.toArray()
+            io.to(socket.id).emit('userlist',{val:mdl,id:socket.id})
             const list = {
                 id:socket.id,
                 name:data.name,
-                ido:data.ido,
-                keido:data.keido,
+                ido:'"' + data.ido + '"',
+                keido:'"' + data.keido + '"',
                 time:data.time
             }
-            for(var i in results){
-                io.to(results[i].socketid).emit('userlist2',{val:list})
+            for(var i in mdl){
+                if(mdl[i].attributes.sid != socket.id){
+                    console.log(i);
+                    console.log(mdl[i].attributes.sid);
+                    io.to(mdl[i].attributes.sid).emit('userlist2',{val:list})
+                }
+                
             }
-        });
+        })
 
-        connection.end();
 
     })
 })
