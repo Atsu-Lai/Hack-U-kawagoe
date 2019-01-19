@@ -41,6 +41,7 @@
                         name:val[i].name,
                         ido:val[i].ido,
                         keido:val[i].keido,
+                        direction:val[i].direction,
                         time:val[i].time,
                     });
                 }
@@ -73,9 +74,20 @@
         })
 
         socketio.on('errors', (data) =>{
-            alert(data.er);
             console.log(data.er);
+        });
+
+        socketio.on('conect', (data) =>{
+            console.log(data.msg);
+            console.log(data.val);
+        });
+        socketio.on('conect2', (data) =>{
+            var val = data.val;
+            for(var i in val){
+                console.log(val[i].name);
+            }
         })
+        
         
         function test(){
             navigator.geolocation.getCurrentPosition(test2);

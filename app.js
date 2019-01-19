@@ -99,11 +99,48 @@ io.on('connection',(socket) => {
 
         pg.connect(con, (err, client, done) => {
             if(err){
-                io.to(socket.id).emit('errors',{er:"くそったれーーー！！！"});
+                io.to(socket.id).emit('errors',{er:"接続失敗"});
             }else{
-                io.to(socket.id).emit('errors',{er:"ついに、ついに、データベースに接続できたのか・・・！！"});
+                io.to(socket.id).emit('errors',{er:"接続成功"});
             }
-        })
+            
+            client.query("insert into location(name,ido,keido,direction,time,sid) values($1, $2, $3, null, $4, $5);",
+            [data.name, data.ido, data.keido, data.time, socket.id], (err,result) => {
+                if(err){
+                    io.to(socket.id).emit('errors',{er:err});
+                }else {
+                    io.to(socket.id).emit('errors',{er:"書き込み成功"});
+                }
+            })
+
+            
+
+            client.query('select * from location where time between $1 and $2 and ido between $3 and $4 and keido between $5 and $6',
+            [timemin,timemax,idomin,idomax,keidomin,keidomax], (err,result) => {
+                if(err){
+                    io.to(socket.id).emit('errors',{er:"読み取り失敗"});
+                }else{
+                    io.to(socket.id).emit('errors',{er:"読み取り成功"});
+                    const mdl = result.rows
+                    io.to(socket.id).emit('userlist',{val:mdl,id:socket.id})
+                    const list = {
+                        id:socket.id,
+                        name:data.name,
+                        ido:'"' + data.ido + '"',
+                        keido:'"' + data.keido + '"',
+                        direction:null,
+                        time:data.time
+                    }
+                    for(var i in mdl){
+                        if(mdl[i].sid != socket.id){
+                            console.log(i);
+                            console.log(mdl[i].sid);
+                            io.to(mdl[i].sid).emit('userlist2',{val:list})
+                        }
+                    }
+                }
+            }); 
+        });
 /*
         db.any("insert into location(name,ido,keido,time,sid) values($!, $2, $3, $4, $5);",[data.name, data.ido, data.keido, data.time, socket.id]).
         then((data) =>{
