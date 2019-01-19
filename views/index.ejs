@@ -14,10 +14,12 @@
     <script>
         var socketio = io();
         var userlist = [];
+        var userlist2 = [];
         $(function(){
-            $('#test').click(() => {
+            $('#get_location').click(() => {
+                watch_start();
                 navigator.geolocation.getCurrentPosition((position) => {
-                    test2(position);
+                    al_location(position);
                     var name = $('#text').val()
                     var ido = position.coords.latitude
                     var keido = position.coords.longitude
@@ -25,12 +27,12 @@
                     date.setTime(date.getTime() + 1000*60*60*9);
                     var datemax = new Date(date.getTime() + 1000*60*3);
                     var datemin = new Date(date.getTime() - 1000*60*3);
-                    socketio.emit("location_data", {name:name,ido:ido,keido:keido,time:date,timemax:datemax,timemin:datemin});
+                    socketio.emit("first_location", {name:name,ido:ido,keido:keido,time:date,timemax:datemax,timemin:datemin});
                 });
             })
         })
         
-        socketio.on('userlist', (data) => {
+        socketio.on('first_list', (data) => {
             var val = data.val;
             userlist = [];
             
@@ -47,31 +49,75 @@
                 }
                 
             }
-            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>time</th></tr>";
+            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
             for(var i in userlist){
                 table += "<tr><td>" + userlist[i].id +"</td>" +
                             "<td>" + userlist[i].name +"</td>" +
                             "<td>" + userlist[i].ido +"</td>" +
                             "<td>" + userlist[i].keido +"</td>" +
+                            "<td>" + userlist[i].direction +"</td>" +
                             "<td>" + userlist[i].time +"</td></tr>";
             }
-            $('table').html(table);
+            $('#first_list').html(table);
         });
 
-        socketio.on('userlist2', (data) => {
-            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>time</th></tr>";
+        socketio.on('first_list2', (data) => {
+            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
             userlist.push(data.val);
             for(var i in userlist){
                 table += "<tr><td>" + userlist[i].id +"</td>" +
                             "<td>" + userlist[i].name +"</td>" +
                             "<td>" + userlist[i].ido +"</td>" +
                             "<td>" + userlist[i].keido +"</td>" +
+                            "<td>" + userlist[i].direction +"</td>" +
                             "<td>" + userlist[i].time +"</td></tr>";
+            }
+            $('#first_list').html(table);
+        });
+
+        socketio.on('watch_list', (data) => {
+            console.log('taro');
+            var val = data.val;
+            userlist2 = [];
+            
+            for(var i in val){
+                if(data.id != val[i].sid){
+                    userlist2.push({
+                        id:val[i].sid,
+                        name:val[i].name,
+                        ido:val[i].ido,
+                        keido:val[i].keido,
+                        direction:val[i].direction,
+                        time:val[i].time,
+                    });
+                }
                 
             }
-            $('table').html(table);
-            console.log(userlist);
-        })
+            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            for(var i in userlist2){
+                table += "<tr><td>" + userlist2[i].id +"</td>" +
+                            "<td>" + userlist2[i].name +"</td>" +
+                            "<td>" + userlist2[i].ido +"</td>" +
+                            "<td>" + userlist2[i].keido +"</td>" +
+                            "<td>" + userlist2[i].direction +"</td>" +
+                            "<td>" + userlist2[i].time +"</td></tr>";
+            }
+            $('#watch_list').html(table);
+        });
+
+        socketio.on('watch_list2', (data) => {
+            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            userlist2.push(data.val);
+            for(var i in userlist2){
+                table += "<tr><td>" + userlist2[i].id +"</td>" +
+                            "<td>" + userlist2[i].name +"</td>" +
+                            "<td>" + userlist2[i].ido +"</td>" +
+                            "<td>" + userlist2[i].keido +"</td>" +
+                            "<td>" + userlist2[i].direction +"</td>" +
+                            "<td>" + userlist2[i].time +"</td></tr>";
+            }
+            $('#watch_list').html(table);
+        });
 
         socketio.on('errors', (data) =>{
             console.log(data.er);
@@ -90,10 +136,11 @@
         
         
         function test(){
-            navigator.geolocation.getCurrentPosition(test2);
+            watch_start();
+            navigator.geolocation.getCurrentPosition(al_location);
         }
 
-        function test2(position) {
+        function al_location(position) {
 
             var geo_text = "緯度:" + position.coords.latitude + "\n";
             geo_text += "経度:" + position.coords.longitude + "\n";
@@ -110,16 +157,56 @@
             alert(geo_text);
             date.setMinutes(date.getMinutes() + 30);
         }
+
+        var num = 0;
+        var watch_id;
+        function watch_start(){
+            console.log('watch start');
+            watch_id = navigator.geolocation.watchPosition(watch, function(e) { alert(e.message); }, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000}); 
+        }
+        function watch(position) {
+            if(position.coords.heading == null){
+                var name = $('#text').val()
+                var ido = position.coords.latitude;
+                var keido = position.coords.longitude;
+                var direction = 2;
+                var date = new Date(position.timestamp);
+                date.setTime(date.getTime() + 1000*60*60*9);
+                var datemax = new Date(date.getTime() + 1000*60*3);
+                var datemin = new Date(date.getTime() - 1000*60*3);
+                socketio.emit("watch_location", {name:name,ido:ido,keido:keido,direction:direction,time:date,timemax:datemax,timemin:datemin});
+            }
+            var geo_text = "緯度:" + position.coords.latitude + "\n";
+            geo_text += "経度:" + position.coords.longitude + "\n";
+            geo_text += "高度:" + position.coords.altitude + "\n";
+            geo_text += "位置精度:" + position.coords.accuracy + "\n";
+            geo_text += "高度精度:" + position.coords.altitudeAccuracy  + "\n";
+            geo_text += "移動方向:" + position.coords.heading + "\n";
+            geo_text += "速度:" + position.coords.speed + "\n";
+
+            var date = new Date(position.timestamp);
+
+            geo_text += "取得時刻:" + date.toLocaleString() + "\n";
+            geo_text += "取得回数:" + (++num) + "\n";
+
+            $('#position_view').html(geo_text);
+        }
     </script>
 </head>
 <body>
     <h1><%= title %></h1>
     <p><%- content %></p>
-    <input type="text" id="text" value="aaa"><br>
-    <button id="test">send</button>
+    <input type="text" id="text" value=""><br>
+    <button id="get_location">send</button>
     <button onclick="test()">ぼたん</button>
-    <table id="userlist">
-        <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>time</th></tr>
+    <pre id="position_view"></pre>
+    <table id="first_list">
+        <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>
     </table>
+    <br>
+    <table id="watch_list">
+            <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>
+    </table>
+    
 </body>
 </html>

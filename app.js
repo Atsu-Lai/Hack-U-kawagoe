@@ -50,7 +50,7 @@ const FL = Bookshelf.Model.extend({
 app.use(session(session_opt));
 app.use(express.static('public'));
 
-app.get('/', (req,res) => {
+app.get('/index', (req,res) => {
   var data ={
       title:'hello',
       content:'てすとやで'
@@ -58,7 +58,7 @@ app.get('/', (req,res) => {
   res.render('index.ejs',data);
 });
 
-app.get('/home', (req,res) => {
+app.get('/', (req,res) => {
   //login status
   var data ={
       status: false,
@@ -89,7 +89,7 @@ app.get('/login', (req,res) => {
 
 io.on('connection',(socket) => {
     console.log(socket.id);
-    socket.on('location_data', (data) => {
+    socket.on('first_location', (data) => {
         var idomax = data.ido + 0.01;
         var idomin = data.ido - 0.01;
         var keidomax = data.keido + 0.01;
@@ -104,8 +104,8 @@ io.on('connection',(socket) => {
                 io.to(socket.id).emit('errors',{er:"接続成功"});
             }
             
-            client.query("insert into location(name,ido,keido,direction,time,sid) values($1, $2, $3, null, $4, $5);",
-            [data.name, data.ido, data.keido, data.time, socket.id], (err,result) => {
+            client.query("insert into location(name,ido,keido,direction,time,sid) values($1, $2, $3, $4, $5, $6);",
+            [data.name, data.ido,data.keido, null, data.time, socket.id], (err,result) => {
                 if(err){
                     io.to(socket.id).emit('errors',{er:err});
                 }else {
@@ -115,19 +115,19 @@ io.on('connection',(socket) => {
 
             
 
-            client.query('select * from location where time between $1 and $2 and ido between $3 and $4 and keido between $5 and $6',
+            client.query('select * from location where direction is null and time between $1 and $2 and ido between $3 and $4 and keido between $5 and $6',
             [timemin,timemax,idomin,idomax,keidomin,keidomax], (err,result) => {
                 if(err){
                     io.to(socket.id).emit('errors',{er:"読み取り失敗"});
                 }else{
                     io.to(socket.id).emit('errors',{er:"読み取り成功"});
                     const mdl = result.rows
-                    io.to(socket.id).emit('userlist',{val:mdl,id:socket.id})
+                    io.to(socket.id).emit('first_list',{val:mdl,id:socket.id})
                     const list = {
                         id:socket.id,
                         name:data.name,
-                        ido:'"' + data.ido + '"',
-                        keido:'"' + data.keido + '"',
+                        ido:data.ido,
+                        keido:data.keido,
                         direction:null,
                         time:data.time
                     }
@@ -135,7 +135,7 @@ io.on('connection',(socket) => {
                         if(mdl[i].sid != socket.id){
                             console.log(i);
                             console.log(mdl[i].sid);
-                            io.to(mdl[i].sid).emit('userlist2',{val:list})
+                            io.to(mdl[i].sid).emit('first_list2',{val:list})
                         }
                     }
                 }
@@ -202,6 +202,56 @@ io.on('connection',(socket) => {
 
             }
         }) */
+    })
+    socket.on('watch_location', (data)=>{
+        console.log('watch!!');
+        var timemax = data.timemax;
+        var timemin = data.timemin;
+        var dirmax = data.direction + 1;
+        var dirmin = data.direction - 1;
+
+        pg.connect(con, (err, client, done) => {
+            if(err){
+                io.to(socket.id).emit('errors',{er:"接続失敗"});
+            }else{
+                io.to(socket.id).emit('errors',{er:"接続成功"});
+            }
+            
+            client.query("insert into location(name,ido,keido,direction,time,sid) values($1, $2, $3, $4, $5, $6);",
+            [data.name, data.ido, data.keido,data.direction, data.time, socket.id], (err,result) => {
+                if(err){
+                    io.to(socket.id).emit('errors',{er:err});
+                }else {
+                    io.to(socket.id).emit('errors',{er:"書き込み成功"});
+                }
+            })
+
+            client.query('select * from location where time between $1 and $2 and direction between $3 and $4',
+            [timemin,timemax,dirmin,dirmax], (err,result) => {
+                if(err){
+                    io.to(socket.id).emit('errors',{er:"読み取り失敗"});
+                }else{
+                    io.to(socket.id).emit('errors',{er:"読み取り成功"});
+                    const mdl = result.rows
+                    io.to(socket.id).emit('watch_list',{val:mdl,id:socket.id})
+                    const list = {
+                        id:socket.id,
+                        name:data.name,
+                        ido:data.ido,
+                        keido:data.keido,
+                        direction:data.direction,
+                        time:data.time
+                    }
+                    for(var i in mdl){
+                        if(mdl[i].sid != socket.id){
+                            console.log(i);
+                            console.log(mdl[i].sid);
+                            io.to(mdl[i].sid).emit('watch_list2',{val:list})
+                        }
+                    }
+                }
+            }); 
+        });
     })
 })
 

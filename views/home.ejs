@@ -6,16 +6,62 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    var socketio = io();
+    var userlist = [];
+    $(function(){
+      $('#get_location').click(() => {
+        navigator.geolocation.getCurrentPosition((position) => {
+          var name = $('#text').val()
+          var ido = position.coords.latitude
+          var keido = position.coords.longitude
+          var date = new Date(position.timestamp);
+          date.setTime(date.getTime() + 1000*60*60*9);
+          var datemax = new Date(date.getTime() + 1000*60*3);
+          var datemin = new Date(date.getTime() - 1000*60*3);
+          socketio.emit("first_location", {name:name,ido:ido,keido:keido,time:date,timemax:datemax,timemin:datemin});
+        });
+      })
+    });
+
+    socketio.on('first_list', (data) => {
+      var val = data.val;
+      userlist = [];
+      for(var i in val){
+        if(data.id != val[i].sid){
+          userlist.push({
+            id:val[i].sid,
+            name:val[i].name,
+            ido:val[i].ido,
+            keido:val[i].keido,
+            direction:val[i].direction,
+            time:val[i].time,
+          });
+        }   
+      }
+      console.log(userlist);  
+    });
+
+    socketio.on('first_list2', (data) => {
+      userlist.push(data.val); 
+      console.log(userlist);
+    });
+    
+  </script>
 </head>
 <body>
   <div id="wrapper">
     <div id="header">
       <h1>電車でGO！（仮）</h1>
     </div>
+    <a href="/index">unko</a>
     <div id="main">
       <% if (status == false) { %>
-        <h1>ログインしてください</h1>
-        <a href="/login"><input type="button" name="login_button" value="ログイン" style="font-size: 100px;"></a>
+        <h1>開始</h1>
+        <input type="text" id="text" value=""><br>
+        <button id="get_location">send</button>
       <% } else { %>
         <h1>ログイン済み</h1>
       <h1>これはトップページや</h1>
