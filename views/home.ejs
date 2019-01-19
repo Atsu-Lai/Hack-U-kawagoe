@@ -48,6 +48,10 @@
       userlist.push(data.val); 
       console.log(userlist);
     });
+
+    socketio.on('errors', (data) =>{
+      console.log(data.er);
+    });
     
   </script>
 </head>
