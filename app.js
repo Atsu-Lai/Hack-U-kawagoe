@@ -10,13 +10,25 @@ const session_opt = {
   saveUninitialized: false,
   cookie: { maxAge: 60 * 60 * 1000 }
 };
-/*const mysql = require('mysql');
+
+const options = {};
+const pgp =require("pg-promise")(options);
+const connection = {
+    host: 'ec2-54-235-68-3.compute-1.amazonaws.com',
+    port: 5432,
+    database: 'dfp3aai94600tp',
+    user: 'fzzukpvuevabig',
+    password: '1bc548633cfa7b8808185d26e2e25c6b834c4859c24a91a161ff31a69d8dfba9'
+};
+const db = pgp(connection);
+/*
+const mysql = require('mysql');
 var mysql_setting = {
     host    : 'localhost',
     user    : 'root',
     password: '',
     database: 'train-db',
-} */
+} 
 const knex = require('knex')({
     dialect: 'postgresql',
     //dialect: 'mysql',
@@ -32,6 +44,7 @@ const Bookshelf = require('bookshelf')(knex);
 const FL = Bookshelf.Model.extend({
     tableName: 'location'
 });
+*/
 app.use(session(session_opt));
 app.use(express.static('public'));
 
@@ -82,7 +95,41 @@ io.on('connection',(socket) => {
         var timemax = data.timemax;
         var timemin = data.timemin;
 
+        db.any("insert into location(name,ido,keido,time,sid) values($!, $2, $3, $4, $5);",[data.name, data.ido, data.keido, data.time, socket.id]).
+        then((data) =>{
+            console.log(data);
+        })
+        .catch((error) => {
+            console.log(error);
+            io.to(socket.id).emit('errors',{er:error});
+        })
+
+        db.any("select * from location where time between $1 and $2", [timemin,timemax]).
+        then((data) =>{
+            const mdl = data.rows
+            io.to(socket.id).emit('userlist',{val:mdl,id:socket.id})
+            const list = {
+                id:socket.id,
+                name:data.name,
+                ido:'"' + data.ido + '"',
+                keido:'"' + data.keido + '"',
+                time:data.time
+            }
+            for(var i in mdl){
+                if(mdl[i].sid != socket.id){
+                    console.log(i);
+                    console.log(mdl[i].sid);
+                    io.to(mdl[i].sid).emit('userlist2',{val:list})
+                }
+            }
+            console.log(data);
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+        /*
         var data = {name:data.name, ido:data.ido, keido:data.keido, time:data.time, sid:socket.id};
+
         new FL(data).save().then((model) => {
 
         });
@@ -107,9 +154,7 @@ io.on('connection',(socket) => {
                 }
 
             }
-        })
-
-
+        }) */
     })
 })
 

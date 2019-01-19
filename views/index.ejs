@@ -71,6 +71,11 @@
             $('table').html(table);
             console.log(userlist);
         })
+
+        socketio.on('errors', (data) =>{
+            alert(data.er);
+            console.log(data.er);
+        })
         
         function test(){
             navigator.geolocation.getCurrentPosition(test2);
