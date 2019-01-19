@@ -10,7 +10,9 @@ const session_opt = {
   saveUninitialized: false,
   cookie: { maxAge: 60 * 60 * 1000 }
 };
-
+const pg = require('pg');
+const con = 'postgres://fzzukpvuevabig:1bc548633cfa7b8808185d26e2e25c6b834c4859c24a91a161ff31a69d8dfba9@ec2-54-235-68-3.compute-1.amazonaws.com:5432/dfp3aai94600tp?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory'
+/*
 const options = {};
 const pgp =require("pg-promise")(options);
 const connection = {
@@ -21,7 +23,7 @@ const connection = {
     password: '1bc548633cfa7b8808185d26e2e25c6b834c4859c24a91a161ff31a69d8dfba9'
 };
 const db = pgp(connection);
-/*
+
 const mysql = require('mysql');
 var mysql_setting = {
     host    : 'localhost',
@@ -95,6 +97,14 @@ io.on('connection',(socket) => {
         var timemax = data.timemax;
         var timemin = data.timemin;
 
+        pg.connect(con, (err, client, done) => {
+            if(err){
+                io.to(socket.id).emit('errors',{er:"くそったれーーー！！！"});
+            }else{
+                io.to(socket.id).emit('errors',{er:"ついに、ついに、データベースに接続できたのか・・・！！"});
+            }
+        })
+/*
         db.any("insert into location(name,ido,keido,time,sid) values($!, $2, $3, $4, $5);",[data.name, data.ido, data.keido, data.time, socket.id]).
         then((data) =>{
             console.log(data);
@@ -127,7 +137,7 @@ io.on('connection',(socket) => {
         .catch((error) => {
             console.log(error);
         })
-        /*
+        
         var data = {name:data.name, ido:data.ido, keido:data.keido, time:data.time, sid:socket.id};
 
         new FL(data).save().then((model) => {
