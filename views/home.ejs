@@ -10,9 +10,12 @@
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
   <script>
     var socketio = io();
+    var firstlist = [];
+    var watchlist = [];
     var userlist = [];
     $(function(){
       $('#get_location').click(() => {
+        watch_start();
         navigator.geolocation.getCurrentPosition((position) => {
           var name = $('#text').val()
           var ido = position.coords.latitude
@@ -25,30 +28,91 @@
         });
       })
     });
-
+    
     socketio.on('first_list', (data) => {
       var val = data.val;
-      userlist = [];
+      firstlist = [];
+      
       for(var i in val){
-        if(data.id != val[i].sid){
-          userlist.push({
-            id:val[i].sid,
+        if(data.sid != val[i].sid){
+          firstlist.push({
+            sid:val[i].sid,
             name:val[i].name,
             ido:val[i].ido,
             keido:val[i].keido,
             direction:val[i].direction,
             time:val[i].time,
           });
-        }   
+        }
+        
       }
-      console.log(userlist);  
     });
 
     socketio.on('first_list2', (data) => {
-      userlist.push(data.val); 
-      console.log(userlist);
+      firstlist.push(data.val);
     });
 
+
+    var num = 0;
+    var watch_id;
+    function watch_start(){
+      watch_id = navigator.geolocation.watchPosition(watch, function(e) { alert(e.message); }, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000}); 
+    }
+    function watch(position) {
+      //if(position.coords.speed >= 4){  本実装用
+        var name = $('#text').val()
+        var ido = position.coords.latitude;
+        var keido = position.coords.longitude;
+        var direction = 2;
+        // var direction = position.coords.heading;
+        var date = new Date(position.timestamp);
+        date.setTime(date.getTime() + 1000*60*60*9);
+        var datemax = new Date(date.getTime() + 1000*60*3);
+        var datemin = new Date(date.getTime() - 1000*60*3);
+        socketio.emit("watch_location", {name:name,ido:ido,keido:keido,direction:direction,time:date,timemax:datemax,timemin:datemin});
+      //}
+    }
+
+    socketio.on('watch_list', (data) => {
+      var val = data.val;
+      watchlist = [];
+      for(var i in val){
+        if(data.sid != val[i].sid){
+          watchlist.push({
+            sid:val[i].sid,
+            name:val[i].name,
+            ido:val[i].ido,
+            keido:val[i].keido,
+            direction:val[i].direction,
+            time:val[i].time,
+          });
+        }  
+      }
+      matching();
+    });
+
+    socketio.on('watch_list2', (data) => {
+      watchlist.push(data.val);
+      matching();
+    });
+    
+    function matching(){
+      for(var i in firstlist){
+        for(var j in watchlist){
+          if(firstlist[i].sid == watchlist[j].sid){
+            userlist.push(firstlist[i]);
+            break;
+          }
+        }
+      }
+      userlist = userlist.filter((v1,i1,a1) => {
+        return(a1.findIndex(function(v2){
+          return (v1.sid === v2.sid)
+        }) === i1);
+      });
+      console.log(userlist);
+    }
+    
     socketio.on('errors', (data) =>{
       console.log(data.er);
     });
