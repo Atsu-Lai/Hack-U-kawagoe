@@ -13,10 +13,12 @@
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         var socketio = io();
+        var firstlist = [];
+        var watchlist = [];
         var userlist = [];
-        var userlist2 = [];
         $(function(){
             $('#get_location').click(() => {
+                console.log('f-click');
                 watch_start();
                 navigator.geolocation.getCurrentPosition((position) => {
                     al_location(position);
@@ -34,12 +36,12 @@
         
         socketio.on('first_list', (data) => {
             var val = data.val;
-            userlist = [];
+            firstlist = [];
             
             for(var i in val){
-                if(data.id != val[i].sid){
-                    userlist.push({
-                        id:val[i].sid,
+                if(data.sid != val[i].sid){
+                    firstlist.push({
+                        sid:val[i].sid,
                         name:val[i].name,
                         ido:val[i].ido,
                         keido:val[i].keido,
@@ -49,74 +51,103 @@
                 }
                 
             }
-            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
-            for(var i in userlist){
-                table += "<tr><td>" + userlist[i].id +"</td>" +
-                            "<td>" + userlist[i].name +"</td>" +
-                            "<td>" + userlist[i].ido +"</td>" +
-                            "<td>" + userlist[i].keido +"</td>" +
-                            "<td>" + userlist[i].direction +"</td>" +
-                            "<td>" + userlist[i].time +"</td></tr>";
+            var table = "<tr><th>sid</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            for(var i in firstlist){
+                table += "<tr><td>" + firstlist[i].sid +"</td>" +
+                            "<td>" + firstlist[i].name +"</td>" +
+                            "<td>" + firstlist[i].ido +"</td>" +
+                            "<td>" + firstlist[i].keido +"</td>" +
+                            "<td>" + firstlist[i].direction +"</td>" +
+                            "<td>" + firstlist[i].time +"</td></tr>";
             }
             $('#first_list').html(table);
         });
 
         socketio.on('first_list2', (data) => {
-            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
-            userlist.push(data.val);
-            for(var i in userlist){
-                table += "<tr><td>" + userlist[i].id +"</td>" +
-                            "<td>" + userlist[i].name +"</td>" +
-                            "<td>" + userlist[i].ido +"</td>" +
-                            "<td>" + userlist[i].keido +"</td>" +
-                            "<td>" + userlist[i].direction +"</td>" +
-                            "<td>" + userlist[i].time +"</td></tr>";
+            var table = "<tr><th>sid</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            firstlist.push(data.val);
+            for(var i in firstlist){
+                table += "<tr><td>" + firstlist[i].sid +"</td>" +
+                            "<td>" + firstlist[i].name +"</td>" +
+                            "<td>" + firstlist[i].ido +"</td>" +
+                            "<td>" + firstlist[i].keido +"</td>" +
+                            "<td>" + firstlist[i].direction +"</td>" +
+                            "<td>" + firstlist[i].time +"</td></tr>";
             }
             $('#first_list').html(table);
         });
 
         socketio.on('watch_list', (data) => {
-            console.log('taro');
             var val = data.val;
-            userlist2 = [];
+            watchlist = [];
             
             for(var i in val){
-                if(data.id != val[i].sid){
-                    userlist2.push({
-                        id:val[i].sid,
+                if(data.sid != val[i].sid){
+                    watchlist.push({
+                        sid:val[i].sid,
                         name:val[i].name,
                         ido:val[i].ido,
                         keido:val[i].keido,
                         direction:val[i].direction,
                         time:val[i].time,
                     });
-                }  
+                }
+                
             }
-            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
-            for(var i in userlist2){
-                table += "<tr><td>" + userlist2[i].id +"</td>" +
-                            "<td>" + userlist2[i].name +"</td>" +
-                            "<td>" + userlist2[i].ido +"</td>" +
-                            "<td>" + userlist2[i].keido +"</td>" +
-                            "<td>" + userlist2[i].direction +"</td>" +
-                            "<td>" + userlist2[i].time +"</td></tr>";
+            matching();
+            var table = "<tr><th>sid</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            for(var i in watchlist){
+                table += "<tr><td>" + watchlist[i].sid +"</td>" +
+                            "<td>" + watchlist[i].name +"</td>" +
+                            "<td>" + watchlist[i].ido +"</td>" +
+                            "<td>" + watchlist[i].keido +"</td>" +
+                            "<td>" + watchlist[i].direction +"</td>" +
+                            "<td>" + watchlist[i].time +"</td></tr>";
             }
             $('#watch_list').html(table);
         });
 
         socketio.on('watch_list2', (data) => {
-            var table = "<tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
-            userlist2.push(data.val);
-            for(var i in userlist2){
-                table += "<tr><td>" + userlist2[i].id +"</td>" +
-                            "<td>" + userlist2[i].name +"</td>" +
-                            "<td>" + userlist2[i].ido +"</td>" +
-                            "<td>" + userlist2[i].keido +"</td>" +
-                            "<td>" + userlist2[i].direction +"</td>" +
-                            "<td>" + userlist2[i].time +"</td></tr>";
+            watchlist.push(data.val);
+            matching();
+            var table = "<tr><th>sid</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            for(var i in watchlist){
+                table += "<tr><td>" + watchlist[i].sid +"</td>" +
+                            "<td>" + watchlist[i].name +"</td>" +
+                            "<td>" + watchlist[i].ido +"</td>" +
+                            "<td>" + watchlist[i].keido +"</td>" +
+                            "<td>" + watchlist[i].direction +"</td>" +
+                            "<td>" + watchlist[i].time +"</td></tr>";
             }
             $('#watch_list').html(table);
+            
         });
+
+        function matching(){
+            for(var i in firstlist){
+                for(var j in watchlist){
+                    if(firstlist[i].sid == watchlist[j].sid){
+                        userlist.push(firstlist[i]);
+                        break;
+                    }
+                }
+            }
+            userlist = userlist.filter((v1,i1,a1) => {
+                return(a1.findIndex(function(v2){
+                    return (v1.sid === v2.sid)
+                }) === i1);
+            });
+            var table = "<tr><th>sid</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>";
+            for(var i in userlist){
+                table += "<tr><td>" + userlist[i].sid +"</td>" +
+                            "<td>" + userlist[i].name +"</td>" +
+                            "<td>" + userlist[i].ido +"</td>" +
+                            "<td>" + userlist[i].keido +"</td>" +
+                            "<td>" + userlist[i].direction +"</td>" +
+                            "<td>" + userlist[i].time +"</td></tr>";
+            }
+            $('#match_list').html(table);
+        }
 
         socketio.on('errors', (data) =>{
             console.log(data.er);
@@ -124,14 +155,8 @@
 
         socketio.on('conect', (data) =>{
             console.log(data.msg);
-            console.log(data.val);
         });
-        socketio.on('conect2', (data) =>{
-            var val = data.val;
-            for(var i in val){
-                console.log(val[i].name);
-            }
-        })
+       
         
         
         function test(){
@@ -160,7 +185,7 @@
         var num = 0;
         var watch_id;
         function watch_start(){
-            console.log('watch start');
+            console.log('w-click!');
             watch_id = navigator.geolocation.watchPosition(watch, function(e) { alert(e.message); }, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000}); 
         }
         function watch(position) {
@@ -190,6 +215,8 @@
 
             $('#position_view').html(geo_text);
         }
+
+        
     </script>
 </head>
 <body>
@@ -197,7 +224,7 @@
     <p><%- content %></p>
     <input type="text" id="text" value=""><br>
     <button id="get_location">send</button>
-    <button onclick="test()">ぼたん</button>
+    <button onclick="watch_start()">ぼたん</button>
     <pre id="position_view"></pre>
     <table id="first_list">
         <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>
@@ -205,6 +232,9 @@
     <br>
     <table id="watch_list">
             <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>
+    </table>
+    <table id="match_list">
+        <tr><th>id</th><th>name</th><th>ido</th><th>keido</th><th>direction</th><th>time</th></tr>
     </table>
     
 </body>
