@@ -13,6 +13,10 @@
     var userlist = [];
     $(function(){
       $('#get_location').click(() => {
+        watch_start();
+        $('#start').hide();
+        $('#list_info').show();
+
         navigator.geolocation.getCurrentPosition((position) => {
           var name = $('#text').val()
           var ido = position.coords.latitude
@@ -39,20 +43,76 @@
             direction:val[i].direction,
             time:val[i].time,
           });
-        }   
+        }
       }
-      console.log(userlist);  
+      console.log(userlist);
     });
 
     socketio.on('first_list2', (data) => {
-      userlist.push(data.val); 
+      userlist.push(data.val);
       console.log(userlist);
     });
 
     socketio.on('errors', (data) =>{
       console.log(data.er);
     });
-    
+    socketio.on('watch_list', (data) => {
+        var val = data.val;
+        userlist2 = [];
+
+        for(var i in val){
+            if(data.id != val[i].sid){
+                userlist2.push({
+                    id:val[i].sid,
+                    name:val[i].name,
+                    ido:val[i].ido,
+                    keido:val[i].keido,
+                    direction:val[i].direction,
+                    time:val[i].time,
+                });
+            }
+        }
+        var table = "<tr><th>名前</th><th>ステータス</th><th>コメント</th></tr>";
+        for(var i in userlist2){
+            table += "<tr><td>" + userlist2[i].name + "</td>" +
+                        "<td>" + "インフル円座" + "</td>" +
+                        "<td>" + "体痛い" + "</td></tr>";
+                    //status and comment
+        }
+        $('#watch_list').html(table);
+    });
+
+    socketio.on('watch_list2', (data) => {
+        var table = "<tr><th>名前</th><th>ステータス</th><th>コメント</th></tr>";
+        userlist2.push(data.val);
+        for(var i in userlist2){
+            table += "<tr><td>" + userlist2[i].name + "</td>" +
+                        "<td>" + "インフル円座" + "</td>" +
+                        "<td>" + "体痛い" + "</td></tr>";
+        }
+        $('#watch_list').html(table);
+    });
+
+    function watch_start(){
+        console.log('watch start');
+        $('#watch_list').show();
+        watch_id = navigator.geolocation.watchPosition(watch, function(e) { alert(e.message); }, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000});
+    }
+
+    function watch(position) {
+        if(position.coords.heading == null){
+            var name = $('#text').val()
+            var ido = position.coords.latitude;
+            var keido = position.coords.longitude;
+            var direction = 2;
+            var date = new Date(position.timestamp);
+            date.setTime(date.getTime() + 1000*60*60*9);
+            var datemax = new Date(date.getTime() + 1000*60*3);
+            var datemin = new Date(date.getTime() - 1000*60*3);
+            socketio.emit("watch_location", {name:name,ido:ido,keido:keido,direction:direction,time:date,timemax:datemax,timemin:datemin});
+        }
+    }
+
   </script>
 </head>
 <body>
@@ -62,15 +122,22 @@
     </div>
     <a href="/index">unko</a>
     <div id="main">
-      <% if (status == false) { %>
-        <h1>開始</h1>
-        <input type="text" id="text" value=""><br>
-        <button id="get_location">send</button>
-      <% } else { %>
-        <h1>ログイン済み</h1>
-      <h1>これはトップページや</h1>
-      <!-- ログインしていなかったら -->
-      <% } %>
+       <h1>開始</h1>
+
+       <div id="start">
+         <input type="text" id="text" value=""><br>
+         <button id="get_location" style="font-size: 30px">取得</button>
+       </div>
+       <div id="list_info" style="display:none"><!-- 仮 -->
+         ここにりすとを表示する<br>
+         例：名前 ： ステータス : コメント
+       </div>
+       <table id="watch_list" style="display:none">
+               <tr><th>名前</th><th>ステータス</th><th>コメント</th></tr>
+       </table>
+       <form name="status">
+       </form>
+
     </div>
     <%- include('nav') %>
   </div>
