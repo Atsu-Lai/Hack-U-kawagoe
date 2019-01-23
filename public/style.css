@@ -6,14 +6,17 @@
 }
 #header {
   width: 100%;
-  background-color: #97f597;
+  background-color: #27e227;
   text-align: center;
   padding: 1px;
   font-size: 37px
 }
+#header > h1 {
+  margin: 50px 0 10px 0;
+}
 #nav {
   margin-top: auto;
-  background-color: #97f597;
+  background-color: #27e227;
 }
 .nav_item {
   display: flex;
@@ -24,4 +27,104 @@
   font-size: 150px;
   color: black;
   /* ページによってそれぞれのアイコンをアクティブにしたい */
+}
+
+li {
+  list-style: none;
+}
+
+.right {
+  text-align: right
+}
+
+.user {
+  font-size: 80%;
+}
+
+.senduser {
+  font-size: 80%;
+  color: red;
+}
+
+/* home画面 -------------------------------------------------------*/
+#start {
+  text-align: center;
+  margin-top: 50%;
+}
+
+#text {
+  margin: 5px;
+  padding: 10px;
+  width: 80%;
+  height: 60px;
+  font-size: 40px;
+  box-shadow: inset 1px 4px 9px -6px rgba(0,0,0,0.5);
+}
+
+#get_location {
+  font-size: 100%;
+  font-weight: bold;
+  padding: 10px 30px;
+  background-color: #27e227;
+  color: #fff;
+  border-style: none;
+  width: 50%;
+  height: 150px;
+  margin: 50px;
+}
+
+/* ステータス画面　-----------------------------------------------*/
+#list_info{
+}
+#watch_list{
+  margin: 0px;
+  padding: 0;
+  width: 100%;
+  height: 800px;
+  overflow-y: scroll;
+}
+
+.status{
+  margin-top: 20px;
+  background-color: #fff;
+  position: relative;
+}
+.status > a{
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+.li_name {
+  margin: 0;
+  padding: 0;
+  color: #808080;
+  font-size: 25px;
+  margin-left: 20px;
+}
+.train_na {
+  margin: 0;
+  padding: 0;
+  color: #808080;
+  font-size: 25px;
+  margin-left: 20px;
+}
+.comment{
+  font-size: 35px;
+}
+
+/* チャット----------------------------------------------------------------------------------- */
+.left {
+  position: relative;
+}
+
+.left > a {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
 }

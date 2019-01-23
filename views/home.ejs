@@ -6,30 +6,66 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="style.css">
-  <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script>
     var socketio = io();
+    var myname = "";
     var firstlist = [];
     var watchlist = [];
     var userlist = [];
+    var user_status = [];
+    var status_list = [];
+    var status_flag = 0;
+    var connectid;
+    var connectname;
     $(function(){
       $('#get_location').click(() => {
-        watch_start();
+        //watch_start(); 
         $('#start').hide();
         $('#list_info').show();
 
         navigator.geolocation.getCurrentPosition((position) => {
-          var name = $('#text').val()
+          myname = $('#text').val()
           var ido = position.coords.latitude
           var keido = position.coords.longitude
           var date = new Date(position.timestamp);
           date.setTime(date.getTime() + 1000*60*60*9);
           var datemax = new Date(date.getTime() + 1000*60*3);
           var datemin = new Date(date.getTime() - 1000*60*3);
-          socketio.emit("first_location", {name:name,ido:ido,keido:keido,time:date,timemax:datemax,timemin:datemin});
+          socketio.emit("first_location", {name:myname,ido:ido,keido:keido,time:date,timemax:datemax,timemin:datemin});
         });
       })
+
+      $('#send_message').click(() =>{
+        var msg = $('#chat_message').val();
+        $('#chat_message').val('');
+        socketio.emit("chat_message", {sid:connectid,myname:myname,cname:connectname,msg:msg})
+      })
+
+      socketio.on('revers_message', (data) =>{
+        $('#messages').append(data.val);
+      })
+
+      $('#homelink').click(() => {
+        $('#list_info').hide();
+        $("#chat_room").hide();
+        $('#start').show();
+      })
+
+      $('#chatlink').click(() => {
+        $('#list_info').hide();
+        $('#start').hide();
+        $("#chat_room").show();
+      })
+
+      $('#listlink').click(() => {
+        $('#start').hide();
+        $("#chat_room").hide();
+        $('#list_info').show();
+      })
+
+      
     });
     
     socketio.on('first_list', (data) => {
@@ -48,10 +84,14 @@
           });
         }
       }
+      //testmuch();
+      send_status();
     });
 
     socketio.on('first_list2', (data) => {
       firstlist.push(data.val);
+      //testmuch();
+      send_status();
     });
 
 
@@ -93,11 +133,13 @@
         }  
       }
       matching();
+      send_status();
     });
 
     socketio.on('watch_list2', (data) => {
       watchlist.push(data.val);
       matching();
+      send_status();
     });
     
     function matching(){
@@ -115,16 +157,27 @@
         }) === i1);
       });
       console.log(userlist);
-      var table = "<tr><th>名前</th><th>ステータス</th><th>コメント</th></tr>";
+      
+      var list = ""
       for(var i in userlist){
-          table += "<tr><td>" + userlist[i].name + "</td>" +
-                      "<td>" + "インフル円座" + "</td>" +
-                      "<td>" + "体痛い" + "</td></tr>";
-                  //status and comment
+          list += "<li class='status'><span class='li_name'>@" + userlist[i].name + "</span><span class='train_na'>4号車</span><br>" + 
+                  "<span class='comment'>ここにコメントを表示</span>" + 
+                  "<a href='#' id ='" + userlist[i].sid + userlist[i].name + "' onclick='make_chat(this)'></a></li>"
       }
-      $('#watch_list').html(table);
+      $('#watch_list').html(list);
     }
     
+    function testmuch(){
+      console.log(firstlist);
+      var list = ""
+      for(var i in firstlist){
+          list += "<li class='status'><span class='li_name'>@" + firstlist[i].name + "</span><span class='train_na'>4号車</span><br>" + 
+                  "<span class='comment'>ここにコメントを表示</span>" + 
+                  "<a href='#' id ='" + firstlist[i].sid + firstlist[i].name + "' onclick='make_chat(this)'></a></li>"
+      }
+      $('#watch_list').html(list);
+    }
+
     socketio.on('errors', (data) =>{
       console.log(data.er);
     });
@@ -132,7 +185,6 @@
 
     function watch_start(){
         console.log('watch start');
-        $('#watch_list').show();
         watch_id = navigator.geolocation.watchPosition(watch, function(e) { alert(e.message); }, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000});
     }
 
@@ -142,14 +194,78 @@
             var ido = position.coords.latitude;
             var keido = position.coords.longitude;
             var direction = 2;
-            var date = new Date(position.timestamp);
+            var date = new Date(position.timestamp);  
             date.setTime(date.getTime() + 1000*60*60*9);
             var datemax = new Date(date.getTime() + 1000*60*3);
             var datemin = new Date(date.getTime() - 1000*60*3);
             socketio.emit("watch_location", {name:name,ido:ido,keido:keido,direction:direction,time:date,timemax:datemax,timemin:datemin});
         }
     }
+    
+    function make_chat(data){
+      var str = data.id; 
+      connectid = str.slice(0,20);
+      connectname = str.slice(20,);
+      $('#connectid').text(connectname);
+      console.log(connectid);
+      console.log(connectname);
+      $('#list_info').hide();
+      $("#chat_room").show();
+    }
 
+    function set_status(){
+      var trainNa = $('#train_select').val();
+      var request = $('#request_select').val();
+      var comment = $('#status_comment').val();
+      var time = new Date();
+      console.log(request);
+      user_status = [];
+      user_status.push({
+        tna:trainNa,
+        req:request,
+        com:comment,
+        name:myname,
+        time:time
+      });
+      status_flag = 1;
+      console.log(user_status);
+      send_status();
+      //socketio.emit('set_status', {tna:trainNa, req:request, com:comment, name:myname, time:time});
+    }
+
+    function send_status(){
+      if(status_flag === 1){
+        var us = user_status[0];
+        for(var i in firstlist){
+          socketio.emit('send_status',{tna:us.tna, req:us.req, com:us.com, name:us.name, tiem:us.time, sid:firstlist[i].sid});
+        }
+      }
+    }
+
+    socketio.on('status_list', (data) => {
+      console.log(data);
+      status_list.unshift(data);
+      status_list = status_list.filter((v1,i1,a1) => {
+        return(a1.findIndex(function(v2){
+          return (v1.sid === v2.sid)
+        }) === i1);
+      });
+      console.log(status_list);
+      var list = ""
+      for(var i in status_list){
+          list += "<li class='status'><span class='li_name'>@" + status_list[i].name + "</span><span class='train_na'>" + status_list[i].tna +"号車</span><br>" + 
+                  "<span class='comment'>" + status_list[i].com + "</span>" + 
+                  "<a href='#' id ='" + status_list[i].sid + status_list[i].name + "' onclick='make_chat(this)'></a></li>"
+      }
+      $('#watch_list').html(list);
+    })
+
+    function set_chatid(data){
+      var str = data.id;
+      connectid = str.slice(0,20);
+      connectname = str.slice(20,);
+      $('#connectid').text(connectname);
+    }
   </script>
 </head>
 <body>
@@ -157,26 +273,59 @@
     <div id="header">
       <h1>電車でGO！（仮）</h1>
     </div>
-    <a href="/index">unko</a>
     <div id="main">
-       <h1>開始</h1>
-
        <div id="start">
          <input type="text" id="text" value=""><br>
-         <button id="get_location" style="font-size: 30px">取得</button>
+         <button id="get_location" style="font-size: 30px">開始する</button>
        </div>
        <div id="list_info" style="display:none"><!-- 仮 -->
-         ここにりすとを表示する<br>
-         例：名前 ： ステータス : コメント
+         <ul id="watch_list">
+         </ul>
+         <div id="status_form">
+           <p>
+              号車選択：
+              <select id="train_select">
+                <% for(var i=1; i<=20; i++){ %>
+                  <%- include('option', {val:i}) %>
+                <% } %>
+              </select>
+           </p>
+           <p>
+             リクエスト：
+             <select id="request_select">
+               <option value="1">その他</option>
+               <option value=2>起こして</option>
+               <option value=3>座りたい</option>
+             </select>
+           </p>
+           <p>
+             コメント：
+             <input type="text" id="status_comment">
+           </p>
+           <button id="send_status" onclick="set_status()">送信</button>
+         </div>
        </div>
-       <table id="watch_list" style="display:none">
-               <tr><th>名前</th><th>ステータス</th><th>コメント</th></tr>
-       </table>
+       <div id="chat_room" style="display: none">
+         <ul id="messages"></ul>
+         <p>
+          to -> <span id="connectid">undefind</span>
+          <input type="text" id="chat_message">
+          <input type="submit" id="send_message" value="send">
+        </p>
+       </div>
+        
        <form name="status">
        </form>
 
     </div>
-    <%- include('nav') %>
+    <div id="nav">
+        <ul class="nav_item">
+          <li name="home"><a href="#" id="homelink"><i class="fas fa-home"></i></a></li>
+          <li name="bbs"><a href="#" id="listlink"><i class="fas fa-train"></i></a></li>
+          <li name="chat"><a href="#" id="chatlink"><i class="fas fa-comments"></i></a></li>
+          <li name="profile"><a href="/profile"><i class="fas fa-user"></i></a></li>
+        </ul>
+      </div>
   </div>
 </body>
 </html>

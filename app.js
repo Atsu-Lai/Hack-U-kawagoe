@@ -161,6 +161,33 @@ io.on('connection',(socket) => {
             }); 
         });
     })
+
+    socket.on('chat_message', (data) => {
+        io.to(data.sid).emit('revers_message',{val:"<li class='left'><span class='user'>"+ data.myname +"</span><br>" + data.msg + "<a href='#' id ='" + socket.id + data.myname + "' onclick='set_chatid(this)'></a></li>"});
+        io.to(socket.id).emit('revers_message',{val:"<li class='right'><span class='senduser'>to -> "+ data.cname +"</span><br>" + data.msg + "</li>"});
+    })
+
+    socket.on('set_status' , (data) => {
+        pg.connect(con, (err, client, done) => {
+            if(err){
+                io.to(socket.id).emit('errors',{er:"s-接続失敗"});
+            }else{
+                io.to(socket.id).emit('errors',{er:"s-接続成功"});
+            }
+            client.query("insert into user_status(sid,name,train_na,request,comment,time) values($1, $2, $3, $4, $5, $6);",
+            [socket.id, data.name, data.tna, data.req, data.com, data.time], (err,result) => {
+                if(err){
+                    io.to(socket.id).emit('errors',{er:err});
+                }else {
+                    io.to(socket.id).emit('errors',{er:"s-書き込み成功"});
+                }
+            })
+        })
+    })
+
+    socket.on('send_status', (data) =>{
+        io.to(data.sid).emit('status_list',{tna:data.tna, req:data.req, com:data.com, name:data.name, tiem:data.time, sid:socket.id});
+    })
 })
 
 
