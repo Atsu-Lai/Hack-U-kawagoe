@@ -37,6 +37,19 @@ app.get('/', (req,res) => {
     res.render('home.ejs', data);
 });
 
+app.get('/test', (req,res) => {
+    //login status
+    var data ={
+        status: false,
+    }
+    // if (req.session.login == null) {
+    //   //login
+    //   status: false;
+    //   console.log('test');
+    // }
+      res.render('test.ejs', data);
+  });
+
 app.get('/chat', (req,res) => {
     res.render('chat.ejs');
 });
@@ -66,7 +79,7 @@ io.on('connection',(socket) => {
 
         pg.connect(con, (err, client, done) => {
             if(err){
-                io.to(socket.id).emit('errors',{er:"f-接続失敗"});
+                io.to(socket.id).emit('errors',{er:err});
             }else{
                 io.to(socket.id).emit('errors',{er:"f-接続成功"});
             }
@@ -163,8 +176,8 @@ io.on('connection',(socket) => {
     })
 
     socket.on('chat_message', (data) => {
-        io.to(data.sid).emit('revers_message',{val:"<li class='left'><span class='user'>"+ data.myname +"</span><br>" + data.msg + "<a href='#' id ='" + socket.id + data.myname + "' onclick='set_chatid(this)'></a></li>"});
-        io.to(socket.id).emit('revers_message',{val:"<li class='right'><span class='senduser'>to -> "+ data.cname +"</span><br>" + data.msg + "</li>"});
+        io.to(data.sid).emit('revers_message',{val:"<li class='left'><span class='username'>@"+ data.myname +"</span><br>" + data.msg + "<a href='#' id ='" + socket.id + data.myname + "' onclick='set_chatid(this)'></a></li>"});
+        io.to(socket.id).emit('revers_message',{val:"<li class='right'><span class='username'>to -> "+ data.cname +"</span><br>" + data.msg + "</li>"});
     })
 
     socket.on('set_status' , (data) => {

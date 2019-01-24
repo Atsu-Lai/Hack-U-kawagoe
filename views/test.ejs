@@ -21,7 +21,7 @@
     var connectname;
     $(function(){
       $('#get_location').click(() => {
-        watch_start(); 
+        //watch_start(); 
         $('#start').hide();
         $('#list_info').show();
 
@@ -85,11 +85,13 @@
         }
       }
       //testmuch();
+      send_status();
     });
 
     socketio.on('first_list2', (data) => {
       firstlist.push(data.val);
       //testmuch();
+      send_status();
     });
 
 
@@ -101,18 +103,18 @@
       watch_id = navigator.geolocation.watchPosition(watch, function(e) { alert(e.message); }, {"enableHighAccuracy": true, "timeout": 20000, "maximumAge": 2000}); 
     }
     function watch(position) {
-     if((position.coords.speed >= 4) && (num <=5)){  
+      //if(position.coords.speed >= 4){  本実装用
         var name = $('#text').val()
         var ido = position.coords.latitude;
         var keido = position.coords.longitude;
-        var direction = position.coords.heading;
+        var direction = 2;
+        // var direction = position.coords.heading;
         var date = new Date(position.timestamp);
         date.setTime(date.getTime() + 1000*60*60*9);
         var datemax = new Date(date.getTime() + 1000*60*3);
         var datemin = new Date(date.getTime() - 1000*60*3);
         socketio.emit("watch_location", {name:name,ido:ido,keido:keido,direction:direction,time:date,timemax:datemax,timemin:datemin});
-        num++;
-      }
+      //}
     }
 
     socketio.on('watch_list', (data) => {
@@ -131,11 +133,13 @@
         }  
       }
       matching();
+      send_status();
     });
 
     socketio.on('watch_list2', (data) => {
       watchlist.push(data.val);
       matching();
+      send_status();
     });
     
     function matching(){
@@ -154,10 +158,25 @@
       });
       console.log(userlist);
       
-      send_status()
+      var list = ""
+      for(var i in userlist){
+          list += "<li class='status'><span class='li_name'>@" + userlist[i].name + "</span><span class='train_na'>4号車</span><br>" + 
+                  "<span class='comment'>ここにコメントを表示</span>" + 
+                  "<a href='#' id ='" + userlist[i].sid + userlist[i].name + "' onclick='make_chat(this)'></a></li>"
+      }
+      $('#watch_list').html(list);
     }
     
-    
+    function testmuch(){
+      console.log(firstlist);
+      var list = ""
+      for(var i in firstlist){
+          list += "<li class='status'><span class='li_name'>@" + firstlist[i].name + "</span><span class='train_na'>4号車</span><br>" + 
+                  "<span class='comment'>ここにコメントを表示</span>" + 
+                  "<a href='#' id ='" + firstlist[i].sid + firstlist[i].name + "' onclick='make_chat(this)'></a></li>"
+      }
+      $('#watch_list').html(list);
+    }
 
     socketio.on('errors', (data) =>{
       console.log(data.er);
@@ -217,8 +236,8 @@
     function send_status(){
       if(status_flag === 1){
         var us = user_status[0];
-        for(var i in userlist){
-          socketio.emit('send_status',{tna:us.tna, req:us.req, com:us.com, name:us.name, tiem:us.time, sid:userlist[i].sid});
+        for(var i in firstlist){
+          socketio.emit('send_status',{tna:us.tna, req:us.req, com:us.com, name:us.name, tiem:us.time, sid:firstlist[i].sid});
         }
       }
     }
