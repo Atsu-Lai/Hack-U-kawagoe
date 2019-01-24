@@ -1,32 +1,50 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html{
+  height: 100%;
+}
+
+body{
+  height: 100%;
+}
+
 #wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
   background-color: #d6ecd6;
 }
 #header {
   width: 100%;
   background-color: #27e227;
   text-align: center;
-  padding: 1px;
-  font-size: 37px
+  font-size: 37px;
+  height: 200px;
 }
 #header > h1 {
   margin: 50px 0 10px 0;
 }
 #nav {
-  margin-top: auto;
   background-color: #27e227;
+  height: 180px;
 }
 .nav_item {
   display: flex;
   justify-content: space-evenly;
   list-style: none;
+  margin-top: 20px;
 }
 .fas {
   font-size: 150px;
   color: black;
   /* ページによってそれぞれのアイコンをアクティブにしたい */
+}
+
+#main{
+  height: calc(100% - 380px);
 }
 
 li {
@@ -75,13 +93,26 @@ li {
 
 /* ステータス画面　-----------------------------------------------*/
 #list_info{
+  height: 100%;
 }
 #watch_list{
   margin: 0px;
   padding: 0;
   width: 100%;
-  height: 800px;
+  height: calc(100% - 500px);
   overflow-y: scroll;
+}
+#status_form{
+  height: 500px;
+}
+
+#status_form > p{
+  font-size: 50px;
+}
+#status_form > select {
+  -webkit-appearance: menulist-button;
+  width: 250px;
+  font-size: 50px;
 }
 
 .status{
@@ -128,3 +159,55 @@ li {
   height: 100%;
   width: 100%;
 }
+
+#chat_room{
+  height: 100%;
+}
+
+#messages {
+  height: calc(100% - 200px);
+  overflow-y: scroll;
+}
+
+#textbox{
+  height: 200px;
+  font-size: 45px;
+}
+
+.right{
+  font-size: 45px;
+}
+.left{
+  font-size: 45px;
+}
+
+#chat_message{
+  margin: 5px;
+  margin-bottom: 20px;
+  padding: 10px;
+  width: 700px;
+  height: 40px;
+  font-size: 15px;
+  border-radius: 10px 0 0 10px;
+  box-shadow: inset 1px 4px 9px -6px rgba(0,0,0,0.5);
+}
+
+#send_message{
+  border: none;
+  cursor: pointer;
+  outline: none;
+  padding: 9px;
+  appearance: none;
+
+  position: absolute;
+  bottom: 234px;
+  font-size: 100%;
+  background-color: #27e227;
+  color: white;
+}
+
+.username{
+  color: #808080;
+  font-size: 35px;
+}
+
