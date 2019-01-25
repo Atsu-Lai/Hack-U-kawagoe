@@ -235,8 +235,8 @@
       console.log(status_list);
       var list = ""
       for(var i in status_list){
-          list += "<li class='status'><span class='li_name'>@" + status_list[i].name + "</span><span class='train_na'>" + status_list[i].tna +"号車</span><br>" + 
-                  "リクエスト:" + "<span class='req'>" + req[(status_list[i].req)-1] + "</span>" + 
+          list += "<li class='status'><span class='li_name'>@" + status_list[i].name + "</span><span class='train_na'>" + status_list[i].tna +"号車</span>" + 
+                  "リクエスト:" + "<span class='req'>" + req[(status_list[i].req)-1] + "</span><br>" + 
                   "<span class='comment'>" + status_list[i].com + "</span>" + 
                   "<a href='#' id ='" + status_list[i].sid + status_list[i].name + "' onclick='make_chat(this)'></a></li>"
       }
