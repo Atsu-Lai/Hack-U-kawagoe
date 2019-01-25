@@ -236,7 +236,7 @@
       var list = ""
       for(var i in status_list){
           list += "<li class='status'><span class='li_name'>@" + status_list[i].name + "</span><span class='train_na'>" + status_list[i].tna +"号車</span><br>" + 
-                  "リクエスト:" + "<span class='req'>" + req[status_list[i].req] - 1 + "</span>" + 
+                  "リクエスト:" + "<span class='req'>" + req[(status_list[i].req)-1] + "</span>" + 
                   "<span class='comment'>" + status_list[i].com + "</span>" + 
                   "<a href='#' id ='" + status_list[i].sid + status_list[i].name + "' onclick='make_chat(this)'></a></li>"
       }
@@ -259,7 +259,7 @@
     <div id="main">
        <div id="start">
          <input type="text" id="text" value=""><br>
-         <button id="get_location" style="font-size: 30px">開始する</button>
+         <button id="get_location" class="submit" style="font-size: 30px">開始する</button>
        </div>
        <div id="list_info" style="display:none"><!-- 仮 -->
          <ul id="watch_list">
