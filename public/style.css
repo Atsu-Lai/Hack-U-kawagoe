@@ -40,7 +40,6 @@ body{
 .fas {
   font-size: 150px;
   color: black;
-  /* ページによってそれぞれのアイコンをアクティブにしたい */
 }
 
 #main{
@@ -91,6 +90,37 @@ li {
   margin: 50px;
 }
 
+#request_select, #train_select {
+  font-size: 40px;
+  border-radius: 5px;
+  color: #827c7c;
+}
+
+#status_comment {
+  font-size: 40%;
+}
+
+.submit {
+    display:block;
+    width: 250px;
+    height:70px;
+    line-height: 70px;
+    color: #FFF;
+    text-decoration: none;
+    text-align: center;
+    background-color: #5df300; 
+    border-radius: 40px;
+    -webkit-transition: all 0.5s;
+    transition: all 0.5s;
+}
+
+.submit:hover{
+     background-color: #4fce00; 
+}
+
+#status_form {
+  background-color: #bdf1c2;
+}
 /* ステータス画面　-----------------------------------------------*/
 #list_info{
   height: 100%;
@@ -146,6 +176,10 @@ li {
   font-size: 35px;
 }
 
+.req {
+  background-color: #7dff00;
+  border-radius: 5px;
+}
 /* チャット----------------------------------------------------------------------------------- */
 .left {
   position: relative;

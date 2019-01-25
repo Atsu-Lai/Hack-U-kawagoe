@@ -19,6 +19,7 @@
     var status_flag = 0;
     var connectid;
     var connectname;
+    var req = ["その他","起こして","座りたい"];
     $(function(){
       $('#get_location').click(() => {
         watch_start(); 
@@ -235,6 +236,7 @@
       var list = ""
       for(var i in status_list){
           list += "<li class='status'><span class='li_name'>@" + status_list[i].name + "</span><span class='train_na'>" + status_list[i].tna +"号車</span><br>" + 
+                  "リクエスト:" + "<span class='req'>" + req[status_list[i].req] - 1 + "</span>" + 
                   "<span class='comment'>" + status_list[i].com + "</span>" + 
                   "<a href='#' id ='" + status_list[i].sid + status_list[i].name + "' onclick='make_chat(this)'></a></li>"
       }
@@ -283,7 +285,7 @@
              コメント：
              <textarea id="status_comment"></textarea>
            </p>
-           <button id="send_status" onclick="set_status()">送信</button>
+           <button id="send_status" class="submit" onclick="set_status()">送信</button>
          </div>
        </div>
        <div id="chat_room" style="display: none">
@@ -302,7 +304,7 @@
           <li name="chat"><a href="#" id="chatlink"><i class="fas fa-comments"></i></a></li>
           <li name="profile"><a href="/profile"><i class="fas fa-user"></i></a></li>
         </ul>
-      </div>
+    </div>
   </div>
 </body>
 </html>
